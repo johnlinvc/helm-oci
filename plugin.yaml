@@ -1,0 +1,8 @@
+name: "helm-oci"
+version: "0.1.0"
+description: |-
+  Get packaged Charts from OCI
+downloaders:
+  - command: "bin/helm-oci"
+    protocols:
+      - "oci+login"
