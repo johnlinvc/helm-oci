@@ -74,7 +74,7 @@ class HelmOci
       helm_exec("package #{dir}/#{@chart} -d #{dir} --version #{version}")
       target_path = "#{dir}/#{@chart}-#{version}.tgz"
       log target_path
-      log $stdout.write(File.read("/var/folders/8s/xxyv93l93z98tnds9_jk5dn537qqvd/T/d20200925-7401-27ceugdzf/nginx-7.0.1.tgz", "rb"))
+      log $stdout.write(File.read(target_path, "rb"))
     end
 
     def run(argv)
