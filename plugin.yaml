@@ -6,3 +6,6 @@ downloaders:
   - command: "bin/helm-oci"
     protocols:
       - "oci+login"
+hooks:
+  install: "$HELM_PLUGIN_DIR/install-binary.sh"
+  update: "$HELM_PLUGIN_DIR/install-binary.sh"
