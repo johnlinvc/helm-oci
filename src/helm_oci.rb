@@ -34,20 +34,30 @@ class HelmOci
 
     def get_chart_versions(chart)
       tag_list = query_oci("v2/#{chart}/tags/list")
-      tag_list["tags"].map do |tag|
+      tag_list["tags"].find_all do |tag|
+        tag =~ /^\d+\.\d+\.\d+-?.*/
+      end.map do |tag|
         {
           "apiVersion" => "v2",
           "version" => tag,
           "name" => chart,
-          "urls" => ["oci+login://#{@repo}/#{chart}-#{tag}.tgz?tag=#{tag}"]
+          "urls" => ["oci+login://#{@repo}/#{chart}/#{chart}-#{tag}.tgz?tag=#{tag}"]
         }
       end
     end
 
-    def gen_index(chart)
-      log("gen index for #{chart}")
-      versions = get_chart_versions(chart)
-      yaml = {"apiVersion" => "v1", "entries" => {chart => versions}}
+    def get_chart_names
+      chart_list = query_oci("v2/_catalog")
+      log chart_list
+      chart_list["repositories"]
+    end
+
+    def gen_index
+      charts = get_chart_names
+      entries = charts.map do |chart|
+        [chart , get_chart_versions(chart)]
+      end.to_h
+      yaml = {"apiVersion" => "v1", "entries" => entries}
       yaml_s = YAML.dump(yaml)
       log(yaml_s)
       puts yaml_s
@@ -61,11 +71,11 @@ class HelmOci
           log("repo format error")
       end
       @repo, @action = $~.captures
-      @repo =~ /^([^\/]+)\/(.+)$/
+      @repo =~ /^([^\/]+)(\/(.+))?$/
       if !$~
           log("registry format error")
       end
-      @registry, @chart = $~.captures
+      @registry, dontcare, @chart = $~.captures
     end
 
     def fetch_package(version)
@@ -89,7 +99,7 @@ class HelmOci
       log @action
       case @action
       when "index.yaml"
-        gen_index(@chart)
+        gen_index
       when /.*\.tgz\?tag=(.*)/
         fetch_package($1)
       end
