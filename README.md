@@ -21,3 +21,9 @@ export OCI_PW=PASSWORD
 helm repo add oci-test oci+login://registry.azurecr.io
 helm pull oci-test/chart
 ```
+
+# TODO
+
+- Show error when user and/or password is missing.
+- Get user/password from docker password storage.
+- Support registiry that don't require login
