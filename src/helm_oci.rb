@@ -65,6 +65,10 @@ class HelmOci
 
     def parse_arg(argv)
       log(argv)
+      if argv[1] == "--version"
+        puts "current version"
+        exit 0
+      end
       @uri = argv[4]
       @uri =~ /^oci\+login:\/\/(.*)\/([^\/]+)$/
       if !$~
