@@ -27,3 +27,4 @@ helm pull oci-test/chart
 - Show error when user and/or password is missing.
 - Get user/password from docker password storage.
 - Support registiry that don't require login
+- Delete the temp files, also delete them with EXIT signal
