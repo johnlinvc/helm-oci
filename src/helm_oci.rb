@@ -74,7 +74,7 @@ class HelmOci
       helm_exec("package #{dir}/#{@chart} -d #{dir} --version #{version}")
       target_path = "#{dir}/#{@chart}-#{version}.tgz"
       log target_path
-      log $stdout.write(File.read(target_path, "rb"))
+      $stdout.write(File.read(target_path))
     end
 
     def run(argv)
