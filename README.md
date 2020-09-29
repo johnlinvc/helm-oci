@@ -24,6 +24,7 @@ helm pull oci-test/chart
 
 # TODO
 
+- Retry curl requests
 - Show error when user and/or password is missing.
 - Get user/password from docker password storage.
 - Support registiry that don't require login
