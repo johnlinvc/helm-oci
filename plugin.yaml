@@ -1,5 +1,5 @@
 name: "helm-oci"
-version: "0.1.4"
+version: "0.1.5"
 description: |-
   Get packaged Charts from OCI
 downloaders:
