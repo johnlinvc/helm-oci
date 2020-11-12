@@ -44,6 +44,7 @@ end
 
 task :build_linux do
   Dir.chdir("vendor/mruby") do
+    system("rake clean")
     system("rake")
   end
   FileUtils.mkdir_p("tmp")
