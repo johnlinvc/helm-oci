@@ -15,11 +15,6 @@ builds:
       branch: HEAD
       commit: 0606652a6e99d902cd3101cf2d757a7c0c37a7fd
       version: 0.1.0
-    https://github.com/mattn/mruby-curl.git:
-      url: https://github.com/mattn/mruby-curl.git
-      branch: HEAD
-      commit: b566ba25cf1c68b14690c1e41489a1875faad0f9
-      version: 0.0.0
     https://github.com/mattn/mruby-json.git:
       url: https://github.com/mattn/mruby-json.git
       branch: HEAD
@@ -64,4 +59,9 @@ builds:
       url: https://github.com/ksss/mruby-file-stat.git
       branch: HEAD
       commit: d196a1e529d227511cf19d516a46f62866619008
+      version: 0.0.0
+    https://github.com/mattn/mruby-curl.git:
+      url: https://github.com/mattn/mruby-curl.git
+      branch: master
+      commit: bb135b3858820f0ba1f1c16897ab2493674afcb9
       version: 0.0.0
