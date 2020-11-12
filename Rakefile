@@ -12,6 +12,7 @@ task :release_mac do
     Dir.chdir("mruby") do
       system("git checkout a97f085c52c3a98ffd26e69ac1fd0d43dc83864c")
       FileUtils.cp("../build_config.rb","./")
+      FileUtils.cp("../build_config.rb.lock","./")
     end
   end
   Dir.chdir("vendor/mruby") do
@@ -34,6 +35,7 @@ task :release_linux do
     Dir.chdir("mruby") do
       system("git checkout a97f085c52c3a98ffd26e69ac1fd0d43dc83864c")
       FileUtils.cp("../build_config.rb","./")
+      FileUtils.cp("../build_config.rb.lock","./")
     end
   end
   Dir.pwd

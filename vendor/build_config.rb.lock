@@ -1,0 +1,67 @@
+---
+mruby_version:
+  version: 2.1.2
+  release_no: 20102
+  git_commit: a97f085c52c3a98ffd26e69ac1fd0d43dc83864c
+builds:
+  host:
+    https://github.com/mattn/mruby-onig-regexp.git:
+      url: https://github.com/mattn/mruby-onig-regexp.git
+      branch: HEAD
+      commit: 76087d150d12f167e95ae10d326099b352cf3d18
+      version: 0.0.0
+    https://github.com/mrbgems/mruby-yaml.git:
+      url: https://github.com/mrbgems/mruby-yaml.git
+      branch: HEAD
+      commit: 0606652a6e99d902cd3101cf2d757a7c0c37a7fd
+      version: 0.1.0
+    https://github.com/mattn/mruby-curl.git:
+      url: https://github.com/mattn/mruby-curl.git
+      branch: HEAD
+      commit: b566ba25cf1c68b14690c1e41489a1875faad0f9
+      version: 0.0.0
+    https://github.com/mattn/mruby-json.git:
+      url: https://github.com/mattn/mruby-json.git
+      branch: HEAD
+      commit: '054699892b0d681110e7348440cddb70a3fd671e'
+      version: 0.0.0
+    https://github.com/iij/mruby-dir.git:
+      url: https://github.com/iij/mruby-dir.git
+      branch: HEAD
+      commit: 89dceefa1250fb1ae868d4cb52498e9e24293cd1
+      version: 0.0.0
+    https://github.com/ksss/mruby-signal.git:
+      url: https://github.com/ksss/mruby-signal.git
+      branch: HEAD
+      commit: c3ea100d5d6998134cf636fe6df1866e1c13cfdc
+      version: 0.0.0
+    https://github.com/iij/mruby-tempfile.git:
+      url: https://github.com/iij/mruby-tempfile.git
+      branch: HEAD
+      commit: b8e4fb65ecce9f0cc3584480d93b53a60cc6dd36
+      version: 0.0.0
+    https://github.com/iij/mruby-env.git:
+      url: https://github.com/iij/mruby-env.git
+      branch: HEAD
+      commit: 056ae324451ef16a50c7887e117f0ea30921b71b
+      version: 0.0.0
+    https://github.com/johnlinvc/mruby-fileutils.git:
+      url: https://github.com/johnlinvc/mruby-fileutils.git
+      branch: HEAD
+      commit: 87910391a3e22aca9faf891ab8a512ab6324641f
+      version: 0.0.0
+    https://github.com/mattn/mruby-http.git:
+      url: https://github.com/mattn/mruby-http.git
+      branch: HEAD
+      commit: dfabda4dc0fa8581a8760097c0cb79d4395199a5
+      version: 0.0.0
+    https://github.com/iij/mruby-errno.git:
+      url: https://github.com/iij/mruby-errno.git
+      branch: HEAD
+      commit: b4415207ff6ea62360619c89a1cff83259dc4db0
+      version: 0.0.0
+    https://github.com/ksss/mruby-file-stat.git:
+      url: https://github.com/ksss/mruby-file-stat.git
+      branch: HEAD
+      commit: d196a1e529d227511cf19d516a46f62866619008
+      version: 0.0.0
