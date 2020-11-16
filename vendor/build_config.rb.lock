@@ -60,8 +60,8 @@ builds:
       branch: HEAD
       commit: d196a1e529d227511cf19d516a46f62866619008
       version: 0.0.0
-    https://github.com/mattn/mruby-curl.git:
-      url: https://github.com/mattn/mruby-curl.git
-      branch: master
-      commit: bb135b3858820f0ba1f1c16897ab2493674afcb9
+    https://github.com/johnlinvc/mruby-curl.git:
+      url: https://github.com/johnlinvc/mruby-curl.git
+      branch: HEAD
+      commit: 7757ec119b0f75d81cb13fe4d3f1f2d4dcc90e0d
       version: 0.0.0

@@ -16,6 +16,7 @@ task :release_mac do
     end
   end
   Dir.chdir("vendor/mruby") do
+    system("rm -rf build")
     system("rake clean")
     system("rake")
   end
@@ -44,6 +45,7 @@ end
 
 task :build_linux do
   Dir.chdir("vendor/mruby") do
+    system("rm -rf build")
     system("rake clean")
     system("rake")
   end

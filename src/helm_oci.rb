@@ -1,4 +1,5 @@
 HELM_BIN = "helm"
+Curl::HTTP_VERSION = Curl::HTTP_1_0
 
 class HelmOci
   class CLI
