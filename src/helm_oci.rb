@@ -24,33 +24,63 @@ class HelmOci
       $stderr.puts(*obj) if ENV["HELM_OCI_DEBUG"] == "1"
     end
 
+    def url_with_auth(*paths)
+      ["https://#{auth_param}@#{@registry}",*paths].join("/")
+    end
+
+    def extract_next_page(response)
+      link = response.headers["Link"]
+      return nil unless link
+      addr, rel = link.split(";").map(&:strip)
+      return nil unless rel == 'rel="next"'
+      addr[2...-1]
+    end
+
     def query_oci(*paths)
-      uri = ["https://#{auth_param}@#{@registry}",*paths].join("/")
+      next_page = nil
+      uri = url_with_auth(*paths)
+      log("query_oci uri",uri)
       curl = Curl.new
       response = curl.get(uri)
       json_body = JSON.parse(response.body)
       log(json_body)
-      json_body
+      [json_body, extract_next_page(response)]
+    end
+
+    def query_all(start_link)
+      all_result = []
+      log(start_link)
+      next_page = start_link
+      while next_page
+        log("next_page",next_page)
+        current_result, next_page = query_oci(next_page)
+        all_result.append(current_result)
+        log(current_result)
+      end
+      all_result
     end
 
     def get_chart_versions(chart)
-      tag_list = query_oci("v2/#{chart}/tags/list")
-      tag_list["tags"].find_all do |tag|
-        tag =~ /^\d+\.\d+\.\d+-?.*/
-      end.map do |tag|
-        {
-          "apiVersion" => "v2",
-          "version" => tag,
-          "name" => chart,
-          "urls" => ["oci+login://#{@repo}/#{chart}/#{chart}-#{tag}.tgz?tag=#{tag}"]
-        }
-      end
+      all_pages = query_all("v2/#{chart}/tags/list")
+      all_pages.map do |page|
+        page["tags"].find_all do |tag|
+          tag =~ /^\d+\.\d+\.\d+-?.*/
+        end.map do |tag|
+          {
+            "apiVersion" => "v2",
+            "version" => tag,
+            "name" => chart,
+            "urls" => ["oci+login://#{@repo}/#{chart}/#{chart}-#{tag}.tgz?tag=#{tag}"]
+          }
+        end
+      end.flatten
     end
 
     def get_chart_names
-      chart_list = query_oci("v2/_catalog")
-      log chart_list
-      chart_list["repositories"]
+      query_all("v2/_catalog").map do |page|
+        log page
+        page["repositories"]
+      end.flatten
     end
 
     def gen_index
