@@ -178,7 +178,15 @@ class HelmOci
         [200, { 'Content-Type' => 'application/yaml' }, [body]]
       end
 
+      def response_404
+        [200, { 'Content-Type' => 'application/yaml' }, ["Not Found"]]
+      end
+
       def handle_chart(path)
+        path =~ /.*\/([^\/]+)\/[^\/?]+\?tag=(.*)$/
+        return response_404 unless $~
+        chart, tag = $~.captures
+        log chart, tag
       end
     end
 
