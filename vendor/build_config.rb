@@ -21,6 +21,7 @@ MRuby::Build.new do |conf|
   conf.gem :mgem => 'mruby-onig-regexp'
   conf.gem :mgem => 'mruby-yaml'
   conf.gem :github => 'johnlinvc/mruby-curl', :branch => 'support_http_version_selection'
+  conf.gem mgem: 'mruby-simplehttpserver'
   conf.gem :mgem => 'mruby-json'
   conf.gem :mgem => 'mruby-dir'
   conf.gem :mgem => 'mruby-signal'

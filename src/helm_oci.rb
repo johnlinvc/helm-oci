@@ -83,15 +83,19 @@ class HelmOci
       end.flatten
     end
 
-    def gen_index
-      charts = get_chart_names
+    def get_index(charts)
+      charts = get_chart_names unless charts
       entries = charts.map do |chart|
         [chart , get_chart_versions(chart)]
       end.to_h
       yaml = {"apiVersion" => "v1", "entries" => entries}
       yaml_s = YAML.dump(yaml)
       log(yaml_s)
-      puts yaml_s
+      yaml_s
+    end
+
+    def gen_index
+      puts get_index
     end
 
     def parse_arg(argv)
@@ -100,8 +104,16 @@ class HelmOci
         puts "current version"
         exit 0
       end
-      @uri = argv[4]
-      @uri =~ /^oci\+login:\/\/(.*)\/([^\/]+)$/
+      if argv[1] == "proxy"
+        puts "Proxy mode"
+        @mode = :proxy
+        @uri = argv[2]
+        @charts = argv.fetch(3,nil).split(",").map(&:strip)
+      else
+        @mode = :downloader
+        @uri = argv[4]
+      end
+      @uri =~ /^oci\+login:\/\/(.*)\/?([^\/]+)?$/
       if !$~
           log("repo format error")
       end
@@ -113,7 +125,7 @@ class HelmOci
       @registry, dontcare, @chart = $~.captures
     end
 
-    def fetch_package(version)
+    def package_path(version)
       dir = Dir.mktmpdir
       trap(:EXIT) {
         # TODO(johnlinvc): remove the tmpdir
@@ -126,17 +138,75 @@ class HelmOci
       helm_exec("package #{dir}/#{@chart} -d #{dir} --version #{version}")
       target_path = "#{dir}/#{@chart}-#{version}.tgz"
       log target_path
-      $stdout.write(File.read(target_path))
     end
 
-    def run(argv)
-      parse_arg(argv)
+    def fetch_package(version)
+      $stdout.write(File.read(package_path))
+    end
+
+    class Proxy
+      def initialize(cli, charts)
+        @cli = cli
+        @charts = charts
+      end
+
+      def log(*obj)
+        $stderr.puts(*obj) if ENV["HELM_OCI_DEBUG"] == "1"
+      end
+
+      def route(env)
+        path = env["PATH_INFO"]
+        case path
+        when /index\.yaml$/
+          handle_index
+        else
+          handle_chart(path)
+        end
+      end
+
+      def call(env)
+        log env
+        route(env)
+      end
+
+      def handle_index
+        body = @cli.get_index(@charts)
+        [200, { 'Content-Type' => 'application/yaml' }, [body]]
+      end
+
+      def handle_chart(path)
+      end
+    end
+
+    def run_proxy
+      app = Proxy.new(self, @charts)
+      server = SimpleHttpServer.new(
+        host: 'localhost',
+        port: 8000,
+        app: app,
+        debug: true
+      )
+      server.run
+    end
+
+    def run_downloader
       log @action
       case @action
       when "index.yaml"
         gen_index
       when /.*\.tgz\?tag=(.*)/
         fetch_package($1)
+      end
+    end
+
+    def run(argv)
+      parse_arg(argv)
+      log @mode
+      case @mode
+      when :proxy
+        run_proxy
+      when :downloader
+        run_downloader
       end
     end
   end
