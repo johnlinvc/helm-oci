@@ -60,7 +60,7 @@ class HelmOci
       all_result
     end
 
-    def get_chart_versions(chart)
+    def get_chart_versions(chart, repo, scheme)
       all_pages = query_all("v2/#{chart}/tags/list")
       all_pages.map do |page|
         page["tags"].find_all do |tag|
@@ -70,7 +70,7 @@ class HelmOci
             "apiVersion" => "v2",
             "version" => tag,
             "name" => chart,
-            "urls" => ["oci+login://#{@repo}/#{chart}/#{chart}-#{tag}.tgz?tag=#{tag}"]
+            "urls" => ["#{scheme}://#{repo}/#{chart}/#{chart}-#{tag}.tgz?tag=#{tag}"]
           }
         end
       end.flatten
@@ -83,10 +83,12 @@ class HelmOci
       end.flatten
     end
 
-    def get_index(charts)
+    def get_index(repo, charts, scheme)
+      scheme ||= "oci+login"
+      repo ||= @repo
       charts = get_chart_names unless charts
       entries = charts.map do |chart|
-        [chart , get_chart_versions(chart)]
+        [chart , get_chart_versions(chart, repo, scheme)]
       end.to_h
       yaml = {"apiVersion" => "v1", "entries" => entries}
       yaml_s = YAML.dump(yaml)
@@ -108,7 +110,8 @@ class HelmOci
         puts "Proxy mode"
         @mode = :proxy
         @uri = argv[2]
-        @charts = argv.fetch(3,nil).split(",").map(&:strip)
+        @hostname = argv[3]
+        @charts = argv.fetch(4,nil).split(",").map(&:strip)
       else
         @mode = :downloader
         @uri = argv[4]
@@ -145,8 +148,9 @@ class HelmOci
     end
 
     class Proxy
-      def initialize(cli, charts)
+      def initialize(cli, hostname, charts)
         @cli = cli
+        @hostname = hostname
         @charts = charts
       end
 
@@ -170,7 +174,7 @@ class HelmOci
       end
 
       def handle_index
-        body = @cli.get_index(@charts)
+        body = @cli.get_index(@hostname, @charts, "http")
         [200, { 'Content-Type' => 'application/yaml' }, [body]]
       end
 
@@ -179,7 +183,7 @@ class HelmOci
     end
 
     def run_proxy
-      app = Proxy.new(self, @charts)
+      app = Proxy.new(self, @hostname, @charts)
       server = SimpleHttpServer.new(
         host: 'localhost',
         port: 8000,
