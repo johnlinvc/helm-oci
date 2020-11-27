@@ -128,23 +128,23 @@ class HelmOci
       @registry, dontcare, @chart = $~.captures
     end
 
-    def package_path(version)
+    def package_path(chart, version)
       dir = Dir.mktmpdir
       trap(:EXIT) {
         # TODO(johnlinvc): remove the tmpdir
       }
-      log(@chart, version)
+      log(chart, version)
       log(dir)
       helm_exec("registry login -u #{user} -p #{pw} #{@registry}")
-      helm_exec("chart pull #{@registry}/#{@chart}:#{version}")
-      helm_exec("chart export #{@registry}/#{@chart}:#{version} -d #{dir}")
-      helm_exec("package #{dir}/#{@chart} -d #{dir} --version #{version}")
-      target_path = "#{dir}/#{@chart}-#{version}.tgz"
+      helm_exec("chart pull #{@registry}/#{chart}:#{version}")
+      helm_exec("chart export #{@registry}/#{chart}:#{version} -d #{dir}")
+      helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
+      target_path = "#{dir}/#{chart}-#{version}.tgz"
       log target_path
     end
 
     def fetch_package(version)
-      $stdout.write(File.read(package_path))
+      $stdout.write(File.read(package_path(@chart, version)))
     end
 
     class Proxy
@@ -183,10 +183,18 @@ class HelmOci
       end
 
       def handle_chart(path)
-        path =~ /.*\/([^\/]+)\/[^\/?]+\?tag=(.*)$/
+        path =~ /.*\/([^\/]+)\/([^\/]+).tgz$/
         return response_404 unless $~
-        chart, tag = $~.captures
-        log chart, tag
+        chart, filename_without_ext = $~.captures
+        log chart, filename_without_ext
+        version = filename_without_ext[(chart.size+1)..-1]
+        log version
+        #file_path = @cli.package_path(chart, version)
+        file_path = "/var/folders/8s/xxyv93l93z98tnds9_jk5dn537qqvd/T/d20201126-64759-27ceugdzf/murano-bundle-0.3.1-pre-35-g98b851a.tgz"
+        log file_path
+        #body = File.open(file_path).read
+        #log body.size
+        [200, { 'Content-Type' => 'application/gzip'}, [File.read(file_path)]]
       end
     end
 
