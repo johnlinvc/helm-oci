@@ -84,9 +84,6 @@ class HelmOci
     end
 
     def get_index(repo, charts, scheme)
-      scheme ||= "oci+login"
-      repo ||= @repo
-      charts = get_chart_names unless charts
       entries = charts.map do |chart|
         [chart , get_chart_versions(chart, repo, scheme)]
       end.to_h
@@ -97,7 +94,38 @@ class HelmOci
     end
 
     def gen_index
-      puts get_index
+      puts get_index(@repo, get_chart_names, "oci+login")
+    end
+
+    def parse_proxy_arg(argv)
+      puts "Proxy mode"
+      @mode = :proxy
+      @uri = argv[2]
+      @hostname = argv[3]
+      @charts = argv.fetch(4,nil).split(",").map(&:strip)
+      @uri =~ /^oci\+login:\/\/([^\/]*)\/?.*$/
+      if !$~
+          log("repo format error")
+      end
+      log $~.captures
+      @registry = $~.captures[0]
+    end
+
+    def parse_downloader_arg(argv)
+      @mode = :downloader
+      @uri = argv[4]
+      @uri =~ /^oci\+login:\/\/(.*)\/([^\/]+)?$/
+      if !$~
+          log("repo format error")
+      end
+      log $~.captures
+      @repo, @action = $~.captures
+      @repo =~ /^([^\/]+)(\/(.+))?$/
+      if !$~
+          log("registry format error")
+      end
+      log $~.captures
+      @registry, dontcare, @chart = $~.captures
     end
 
     def parse_arg(argv)
@@ -107,25 +135,10 @@ class HelmOci
         exit 0
       end
       if argv[1] == "proxy"
-        puts "Proxy mode"
-        @mode = :proxy
-        @uri = argv[2]
-        @hostname = argv[3]
-        @charts = argv.fetch(4,nil).split(",").map(&:strip)
+        parse_proxy_arg(argv)
       else
-        @mode = :downloader
-        @uri = argv[4]
+        parse_downloader_arg(argv)
       end
-      @uri =~ /^oci\+login:\/\/(.*)\/?([^\/]+)?$/
-      if !$~
-          log("repo format error")
-      end
-      @repo, @action = $~.captures
-      @repo =~ /^([^\/]+)(\/(.+))?$/
-      if !$~
-          log("registry format error")
-      end
-      @registry, dontcare, @chart = $~.captures
     end
 
     def package_path(chart, version)
@@ -189,11 +202,8 @@ class HelmOci
         log chart, filename_without_ext
         version = filename_without_ext[(chart.size+1)..-1]
         log version
-        #file_path = @cli.package_path(chart, version)
-        file_path = "/var/folders/8s/xxyv93l93z98tnds9_jk5dn537qqvd/T/d20201126-64759-27ceugdzf/murano-bundle-0.3.1-pre-35-g98b851a.tgz"
+        file_path = @cli.package_path(chart, version)
         log file_path
-        #body = File.open(file_path).read
-        #log body.size
         [200, { 'Content-Type' => 'application/gzip'}, [File.read(file_path)]]
       end
     end
