@@ -19,6 +19,7 @@ task :release_mac do
     system("rm -rf build")
     system("rake clean")
     system("rake")
+    FileUtils.cp("build_config.rb.lock","../")
   end
   FileUtils.mkdir_p("tmp")
   system("vendor/mruby/bin/mrbc -o tmp/helm_oci.c -Bhelm_oci src/helm_oci.rb")

@@ -55,28 +55,28 @@ builds:
       branch: HEAD
       commit: b4415207ff6ea62360619c89a1cff83259dc4db0
       version: 0.0.0
-    https://github.com/ksss/mruby-file-stat.git:
-      url: https://github.com/ksss/mruby-file-stat.git
-      branch: HEAD
-      commit: d196a1e529d227511cf19d516a46f62866619008
-      version: 0.0.0
-    https://github.com/johnlinvc/mruby-curl.git:
-      url: https://github.com/johnlinvc/mruby-curl.git
-      branch: HEAD
-      commit: 7757ec119b0f75d81cb13fe4d3f1f2d4dcc90e0d
-      version: 0.0.0
-    https://github.com/matsumotory/mruby-simplehttpserver.git:
-      url: https://github.com/matsumotory/mruby-simplehttpserver.git
-      branch: master
-      commit: 5a097ff55d7b320cb41ba74d71793d70b5d2404c
-      version: 1.0.0
     https://github.com/katzer/mruby-shelf.git:
       url: https://github.com/katzer/mruby-shelf.git
-      branch: master
+      branch: HEAD
       commit: fe72d925b71576cfd05aed35829759c67988a068
       version: 0.0.0
     https://github.com/katzer/mruby-r3.git:
       url: https://github.com/katzer/mruby-r3.git
-      branch: master
+      branch: HEAD
       commit: 185455010e82fdc491ded1c705b2c0521bb266ba
+      version: 0.0.0
+    https://github.com/mattn/mruby-curl.git:
+      url: https://github.com/mattn/mruby-curl.git
+      branch: master
+      commit: 962ca143c6743ab22fbe9d0319684b29b1a244a8
+      version: 0.0.0
+    https://github.com/matsumotory/mruby-simplehttpserver.git:
+      url: https://github.com/matsumotory/mruby-simplehttpserver.git
+      branch: master
+      commit: b017b4cd124c81bfde1afc2c69ff5d5273ef4980
+      version: 1.0.0
+    https://github.com/ksss/mruby-file-stat.git:
+      url: https://github.com/ksss/mruby-file-stat.git
+      branch: master
+      commit: 66cf135ff9642d96a6127a79b307f6314e606deb
       version: 0.0.0
