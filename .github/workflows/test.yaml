@@ -15,7 +15,7 @@ jobs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 2.7.2
-    - name: Install curl
-      run: apt-get update && apt-get install libcurl -y
+    - name: Install Deps
+      run: sudo apt-get install libcurl -y
     - name: build 
       run: rake release_linux
