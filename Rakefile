@@ -52,7 +52,7 @@ end
 
 task :release_linux => %w[clean build] do
   FileUtils.mkdir_p("build/linux/helm-oci/bin")
-  FileUtils.cp("bin/helm-oci","build/macos/helm-oci/bin")
+  FileUtils.cp("bin/helm-oci","build/linux/helm-oci/bin")
   Dir.chdir("build/linux") do
     system_raise("tar -zvcf helm-oci-linux.tgz helm-oci/")
   end
