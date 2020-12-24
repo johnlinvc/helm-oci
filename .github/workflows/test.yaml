@@ -16,6 +16,6 @@ jobs:
       with:
         ruby-version: 2.7.2
     - name: Install Deps
-      run: sudo apt-get update && sudo apt-get install curl -y
+      run: sudo apt-get update && sudo apt-get install libcurl-dev -y
     - name: build 
       run: rake release_linux
