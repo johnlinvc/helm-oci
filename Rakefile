@@ -30,6 +30,10 @@ task :release_mac do
   end
 end
 
+task :docker_release_linux do
+  system("docker run --rm -it -v '#{pwd}':/app -w /app ruby:2.7 /bin/bash -c 'rake release_linux'")
+end
+
 task :release_linux do
   Dir.chdir("vendor") do
     system("git clone https://github.com/mruby/mruby.git mruby") unless Dir.exists?("mruby")
@@ -39,11 +43,6 @@ task :release_linux do
       FileUtils.cp("../build_config.rb.lock","./")
     end
   end
-  Dir.pwd
-  system("docker run --rm -it -v '#{pwd}':/app -w /app ruby:2.7 /bin/bash -c 'rake build_linux'")
-end
-
-task :build_linux do
   Dir.chdir("vendor/mruby") do
     system("rm -rf build")
     system("rake clean")
