@@ -67,16 +67,21 @@ builds:
       version: 0.0.0
     https://github.com/mattn/mruby-curl.git:
       url: https://github.com/mattn/mruby-curl.git
-      branch: master
+      branch: HEAD
       commit: 962ca143c6743ab22fbe9d0319684b29b1a244a8
       version: 0.0.0
     https://github.com/matsumotory/mruby-simplehttpserver.git:
       url: https://github.com/matsumotory/mruby-simplehttpserver.git
-      branch: master
+      branch: HEAD
       commit: b017b4cd124c81bfde1afc2c69ff5d5273ef4980
       version: 1.0.0
     https://github.com/ksss/mruby-file-stat.git:
       url: https://github.com/ksss/mruby-file-stat.git
-      branch: master
+      branch: HEAD
       commit: 66cf135ff9642d96a6127a79b307f6314e606deb
+      version: 0.0.0
+    https://github.com/appPlant/mruby-process.git:
+      url: https://github.com/appPlant/mruby-process.git
+      branch: master
+      commit: d9e4913005958950ced5505238ba71c28d10f3a4
       version: 0.0.0
