@@ -153,7 +153,6 @@ class HelmOci
       helm_exec("chart export #{@registry}/#{chart}:#{version} -d #{dir}")
       helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
       target_path = "#{dir}/#{chart}-#{version}.tgz"
-      log target_path
     end
 
     def fetch_package(version)
@@ -202,9 +201,11 @@ class HelmOci
         log chart, filename_without_ext
         version = filename_without_ext[(chart.size+1)..-1]
         log version
-        file_path = @cli.package_path(chart, version)
+        file_path = @cli.package_path(chart, version).strip
         log file_path
-        [200, { 'Content-Type' => 'application/gzip'}, [File.read(file_path)]]
+        f = File.read(file_path)
+        log f.size
+        [200, { 'Content-Type' => 'application/gzip'}, [f]]
       end
     end
 
@@ -242,5 +243,6 @@ class HelmOci
   end
 end
 
+ARGV.unshift($0)
 cli = HelmOci::CLI.new
 cli.run(ARGV)
