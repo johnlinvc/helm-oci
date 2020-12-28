@@ -18,7 +18,9 @@ MRuby::Build.new do |conf|
   # end
   # conf.gem 'examples/mrbgems/c_and_ruby_extension_example'
   # conf.gem :core => 'mruby-eval'
-  conf.gem :mgem => 'mruby-onig-regexp'
+  conf.gem :mgem => 'mruby-onig-regexp' do |g|
+    g.bundle_onigmo
+  end
   conf.gem :mgem => 'mruby-yaml'
   conf.gem :mgem => 'mruby-curl'
   conf.gem :mgem => 'mruby-simplehttpserver'
