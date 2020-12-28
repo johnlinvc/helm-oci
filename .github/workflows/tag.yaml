@@ -6,11 +6,11 @@ on:
       - '*'
 
 jobs:
-  create_release:
+  once:
     name: Create GitHub release
     runs-on: ubuntu-latest
     outputs:
-      upload_url: ${{ steps.step_upload_url.outputs.upload_url }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Create a release
         id: create_release
@@ -22,8 +22,6 @@ jobs:
           release_name: Release ${{ github.ref }}
           draft: true
           prerelease: true
-      - id: step_upload_url
-        run: echo "::set-output name=upload_url::${{ steps.create_release.outputs.upload_url }}"
 
 
   build:
@@ -54,7 +52,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ needs.create_release.outputs.upload_url }}
+        upload_url: ${{ needs.once.outputs.upload_url }}
         asset_path: build/linux/helm-oci-linux.tgz
         asset_name: helm-oci-linux.tgz
         asset_content_type: application/octet-stream
@@ -65,7 +63,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ needs.create_release.outputs.upload_url }}
+        upload_url: ${{ needs.once.outputs.upload_url }}
         asset_path: build/macos/helm-oci-macos.tgz
         asset_name: helm-oci-macos.tgz
         asset_content_type: application/octet-stream
