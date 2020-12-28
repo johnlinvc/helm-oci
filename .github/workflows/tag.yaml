@@ -1,0 +1,83 @@
+name: Create Release Builds
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  once:
+    name: Create GitHub release
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create a release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: true
+          prerelease: true
+      # store the value of upload_url in a text file, double quotes are important to avoid shell expansion
+      - run: echo "${{ steps.create_release.outputs.upload_url }}" > ./upload_url.txt
+
+      - name: 'Store upload url'
+        uses: actions/upload-artifact@v1
+        with:
+          name: upload_url
+          path: ./upload_url.txt
+
+  build:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        os: [ubuntu, macos]
+        ruby: [2.7]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{matrix.ruby}}
+    - name: Install Deps (Linux)
+      run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev -y
+      if: matrix.os == 'ubuntu'
+    - name: build release (Linux)
+      run: rake release_linux
+      if: matrix.os == 'ubuntu'
+    - name: build release (macos)
+      run: rake release_mac
+      if: matrix.os == 'macos'
+    - uses: actions/download-artifact@v1
+      with:
+        name: upload_url
+    - id: upload_url
+      run: |
+        URL=$(cat upload_url/upload_url.txt)
+        echo "::set-output name=url::${URL}"
+    - name: Upload release assets (Linux)
+      id: upload_assets_linux
+      uses: actions/upload-release-asset@v1
+      if: matrix.os == 'ubuntu'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.upload_url.outputs.url }}
+        asset_path: build/linux/helm-oci-linux.tgz
+        asset_name: helm-oci-linux.tgz
+        asset_content_type: application/octet-stream
+    - name: Upload release assets (macos)
+      id: upload_assets_macos
+      uses: actions/upload-release-asset@v1
+      if: matrix.os == 'macos'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.upload_url.outputs.url }}
+        asset_path: build/macos/helm-oci-macos.tgz
+        asset_name: helm-oci-macos.tgz
+        asset_content_type: application/octet-stream

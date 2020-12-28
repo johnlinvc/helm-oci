@@ -1,0 +1,26 @@
+name: PR
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}-latest
+    strategy:
+      matrix:
+        os: [ubuntu, macos]
+        ruby: [2.7]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{matrix.ruby}}
+    - name: Install Deps (Linux)
+      run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev -y
+      if: matrix.os == 'ubuntu'
+    - name: build 
+      run: rake build
