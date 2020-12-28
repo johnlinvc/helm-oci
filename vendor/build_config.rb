@@ -29,6 +29,7 @@ MRuby::Build.new do |conf|
   conf.gem :mgem => 'mruby-signal'
   conf.gem :mgem => 'mruby-tempfile'
   conf.gem :mgem => 'mruby-env'
+  conf.gem :mgem => 'mruby-process2'
   conf.gem :github => 'johnlinvc/mruby-fileutils'
   # conf.gem :github => 'mattn/mruby-onig-regexp'
   # conf.gem :git => 'git@github.com:mattn/mruby-onig-regexp.git', :branch => 'master', :options => '-v'

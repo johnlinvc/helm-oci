@@ -1,7 +1,8 @@
-name: "helm-oci"
+name: "oci"
 version: "0.2.0"
 description: |-
-  Get packaged Charts from OCI
+  Get packaged Charts from OCI, support both downloader & proxy mode
+command: "bin/helm-oci"
 downloaders:
   - command: "bin/helm-oci"
     protocols:

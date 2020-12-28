@@ -60,7 +60,7 @@ class HelmOci
       all_result
     end
 
-    def get_chart_versions(chart)
+    def get_chart_versions(chart, repo, scheme)
       all_pages = query_all("v2/#{chart}/tags/list")
       all_pages.map do |page|
         page["tags"].find_all do |tag|
@@ -70,7 +70,7 @@ class HelmOci
             "apiVersion" => "v2",
             "version" => tag,
             "name" => chart,
-            "urls" => ["oci+login://#{@repo}/#{chart}/#{chart}-#{tag}.tgz?tag=#{tag}"]
+            "urls" => ["#{scheme}://#{repo}/#{chart}/#{chart}-#{tag}.tgz?tag=#{tag}"]
           }
         end
       end.flatten
@@ -83,15 +83,49 @@ class HelmOci
       end.flatten
     end
 
-    def gen_index
-      charts = get_chart_names
+    def get_index(repo, charts, scheme)
       entries = charts.map do |chart|
-        [chart , get_chart_versions(chart)]
+        [chart , get_chart_versions(chart, repo, scheme)]
       end.to_h
       yaml = {"apiVersion" => "v1", "entries" => entries}
       yaml_s = YAML.dump(yaml)
       log(yaml_s)
-      puts yaml_s
+      yaml_s
+    end
+
+    def gen_index
+      puts get_index(@repo, get_chart_names, "oci+login")
+    end
+
+    def parse_proxy_arg(argv)
+      puts "Proxy mode"
+      @mode = :proxy
+      @uri = argv[2]
+      @hostname = argv[3]
+      @charts = argv.fetch(4,nil).split(",").map(&:strip)
+      @uri =~ /^oci\+login:\/\/([^\/]*)\/?.*$/
+      if !$~
+          log("repo format error")
+      end
+      log $~.captures
+      @registry = $~.captures[0]
+    end
+
+    def parse_downloader_arg(argv)
+      @mode = :downloader
+      @uri = argv[4]
+      @uri =~ /^oci\+login:\/\/(.*)\/([^\/]+)?$/
+      if !$~
+          log("repo format error")
+      end
+      log $~.captures
+      @repo, @action = $~.captures
+      @repo =~ /^([^\/]+)(\/(.+))?$/
+      if !$~
+          log("registry format error")
+      end
+      log $~.captures
+      @registry, dontcare, @chart = $~.captures
     end
 
     def parse_arg(argv)
@@ -100,37 +134,93 @@ class HelmOci
         puts "current version"
         exit 0
       end
-      @uri = argv[4]
-      @uri =~ /^oci\+login:\/\/(.*)\/([^\/]+)$/
-      if !$~
-          log("repo format error")
+      if argv[1] == "proxy"
+        parse_proxy_arg(argv)
+      else
+        parse_downloader_arg(argv)
       end
-      @repo, @action = $~.captures
-      @repo =~ /^([^\/]+)(\/(.+))?$/
-      if !$~
-          log("registry format error")
-      end
-      @registry, dontcare, @chart = $~.captures
     end
 
-    def fetch_package(version)
+    def package_path(chart, version)
       dir = Dir.mktmpdir
       trap(:EXIT) {
         # TODO(johnlinvc): remove the tmpdir
       }
-      log(@chart, version)
+      log(chart, version)
       log(dir)
       helm_exec("registry login -u #{user} -p #{pw} #{@registry}")
-      helm_exec("chart pull #{@registry}/#{@chart}:#{version}")
-      helm_exec("chart export #{@registry}/#{@chart}:#{version} -d #{dir}")
-      helm_exec("package #{dir}/#{@chart} -d #{dir} --version #{version}")
-      target_path = "#{dir}/#{@chart}-#{version}.tgz"
-      log target_path
-      $stdout.write(File.read(target_path))
+      helm_exec("chart pull #{@registry}/#{chart}:#{version}")
+      helm_exec("chart export #{@registry}/#{chart}:#{version} -d #{dir}")
+      helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
+      target_path = "#{dir}/#{chart}-#{version}.tgz"
     end
 
-    def run(argv)
-      parse_arg(argv)
+    def fetch_package(version)
+      $stdout.write(File.read(package_path(@chart, version)))
+    end
+
+    class Proxy
+      def initialize(cli, hostname, charts)
+        @cli = cli
+        @hostname = hostname
+        @charts = charts
+      end
+
+      def log(*obj)
+        $stderr.puts(*obj) if ENV["HELM_OCI_DEBUG"] == "1"
+      end
+
+      def route(env)
+        path = env["PATH_INFO"]
+        case path
+        when /index\.yaml$/
+          handle_index
+        else
+          handle_chart(path)
+        end
+      end
+
+      def call(env)
+        log env
+        route(env)
+      end
+
+      def handle_index
+        body = @cli.get_index(@hostname, @charts, "http")
+        [200, { 'Content-Type' => 'application/yaml' }, [body]]
+      end
+
+      def response_404
+        [200, { 'Content-Type' => 'application/yaml' }, ["Not Found"]]
+      end
+
+      def handle_chart(path)
+        path =~ /.*\/([^\/]+)\/([^\/]+).tgz$/
+        return response_404 unless $~
+        chart, filename_without_ext = $~.captures
+        log chart, filename_without_ext
+        version = filename_without_ext[(chart.size+1)..-1]
+        log version
+        file_path = @cli.package_path(chart, version).strip
+        log file_path
+        f = File.read(file_path)
+        log f.size
+        [200, { 'Content-Type' => 'application/gzip'}, [f]]
+      end
+    end
+
+    def run_proxy
+      app = Proxy.new(self, @hostname, @charts)
+      server = SimpleHttpServer.new(
+        host: 'localhost',
+        port: 8000,
+        app: app,
+        debug: true
+      )
+      server.run
+    end
+
+    def run_downloader
       log @action
       case @action
       when "index.yaml"
@@ -139,8 +229,20 @@ class HelmOci
         fetch_package($1)
       end
     end
+
+    def run(argv)
+      parse_arg(argv)
+      log @mode
+      case @mode
+      when :proxy
+        run_proxy
+      when :downloader
+        run_downloader
+      end
+    end
   end
 end
 
+ARGV.unshift($0)
 cli = HelmOci::CLI.new
 cli.run(ARGV)
