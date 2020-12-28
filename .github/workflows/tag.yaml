@@ -66,7 +66,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.upload_url.outputs.upload_url }}
+        upload_url: ${{ steps.upload_url.outputs.url }}
         asset_path: build/linux/helm-oci-linux.tgz
         asset_name: helm-oci-linux.tgz
         asset_content_type: application/octet-stream
@@ -77,7 +77,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.upload_url.outputs.upload_url }}
+        upload_url: ${{ steps.upload_url.outputs.url }}
         asset_path: build/macos/helm-oci-macos.tgz
         asset_name: helm-oci-macos.tgz
         asset_content_type: application/octet-stream
