@@ -93,8 +93,15 @@ class HelmOci
       yaml_s
     end
 
-    def gen_index
-      puts get_index(@repo, get_chart_names, "oci+login")
+    def gen_index(action)
+      repo_names = action.split("?")[1]&.split("=")[1]&.split(",")
+      log repo_names
+      if repo_names
+        chart_names = repo_names
+      else
+        chart_names = get_chart_names
+      end
+      puts get_index(@repo, chart_names, "oci+login")
     end
 
     def parse_proxy_arg(argv)
@@ -223,8 +230,8 @@ class HelmOci
     def run_downloader
       log @action
       case @action
-      when "index.yaml"
-        gen_index
+      when /index.yaml(\?.*)?/
+        gen_index(@action)
       when /.*\.tgz\?tag=(.*)/
         fetch_package($1)
       end

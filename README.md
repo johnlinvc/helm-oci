@@ -27,6 +27,15 @@ helm repo add oci-test oci+login://registry.azurecr.io
 helm pull oci-test/chart
 ```
 
+### Limit the repos to pull from
+
+Pulling everything from the OCI registry take quite some time if there's a large amount of repos in it.
+We can limit the repos to pull from with following syntax when adding repo
+
+```
+helm repo add oci-test oci+login://registry.azurecr.io?repo=chart1,chart2
+```
+
 ## Proxy
 
 Start a chartmuseum compatible proxy for the OCI registry.
