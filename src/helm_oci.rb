@@ -148,10 +148,15 @@ class HelmOci
       end
     end
 
+    TMP_DIR_NAME=".helm_oci_tmp"
     def package_path(chart, version)
-      dir = Dir.mktmpdir
+      dir = "#{Dir.pwd}/#{TMP_DIR_NAME}/#{chart}"
+      begin
+        FileUtils.mkdir_p(dir)
+      rescue Errno::EEXIST
+      end
       trap(:EXIT) {
-        # TODO(johnlinvc): remove the tmpdir
+        `rm -rf #{dir}/*`
       }
       log(chart, version)
       log(dir)
