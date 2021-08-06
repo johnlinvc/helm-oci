@@ -156,14 +156,17 @@ class HelmOci
       rescue Errno::EEXIST
       end
       trap(:EXIT) {
-        `rm -rf #{dir}/*`
+        #`rm -rf #{dir}/*`
       }
       log(chart, version)
       log(dir)
       helm_exec("registry login -u #{user} -p #{pw} #{@registry}")
       helm_exec("chart pull #{@registry}/#{chart}:#{version}")
+      log(`ls #{dir}`)
       helm_exec("chart export #{@registry}/#{chart}:#{version} -d #{dir}")
+      log(`ls #{dir}`)
       helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
+      log(`ls #{dir}`)
       target_path = "#{dir}/#{chart}-#{version}.tgz"
     end
 
