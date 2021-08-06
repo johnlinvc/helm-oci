@@ -149,6 +149,7 @@ class HelmOci
     end
 
     TMP_DIR_NAME=".helm_oci_tmp"
+    EXPORT_RETRY=5
     def package_path(chart, version)
       dir = "#{Dir.pwd}/#{TMP_DIR_NAME}/#{chart}"
       begin
@@ -164,7 +165,15 @@ class HelmOci
       helm_exec("chart pull #{@registry}/#{chart}:#{version}")
       log(`ls #{dir}`)
       helm_exec("chart list")
-      helm_exec("chart export #{@registry}/#{chart}:#{version} -d #{dir}")
+      EXPORT_RETRY.times do |i|
+        log("export chart: attempt #{i} ")
+        helm_exec("chart export #{@registry}/#{chart}:#{version} -d #{dir}")
+        break if $?==0
+      end
+      if $? != 0
+        puts "failed to export chart"
+        exit 1
+      end
       log(`ls #{dir}`)
       helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
       log(`ls #{dir}`)
