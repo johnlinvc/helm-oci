@@ -5,7 +5,9 @@ class HelmOci
   class CLI
     def helm_exec(cmd, *args)
       full_cmd = "HELM_EXPERIMENTAL_OCI=1 #{HELM_BIN} #{cmd} #{args.join(" ")}"
-      log `#{full_cmd}`
+      res = `#{full_cmd}`
+      log(res)
+      res
     end
 
     def user
@@ -150,6 +152,7 @@ class HelmOci
 
     TMP_DIR_NAME=".helm_oci_tmp"
     EXPORT_RETRY=5
+    PULL_RETRY=5
     def package_path(chart, version)
       dir = "#{Dir.pwd}/#{TMP_DIR_NAME}/#{chart}"
       begin
@@ -157,23 +160,42 @@ class HelmOci
       rescue Errno::EEXIST
       end
       trap(:EXIT) {
-        #`rm -rf #{dir}/*`
+        `rm -rf #{dir}/*`
       }
       log(chart, version)
       log(dir)
       helm_exec("registry login -u #{user} -p #{pw} #{@registry}")
-      helm_exec("chart pull #{@registry}/#{chart}:#{version}")
-      log(`ls #{dir}`)
-      helm_exec("chart list")
+      chart_identifier = "#{@registry}/#{chart}:#{version}"
+
+      save_succeed = false
+      PULL_RETRY.times do |i|
+        log("pull chart: attempt #{i} ")
+        helm_exec("chart pull #{chart_identifier}")
+        resp = helm_exec("chart list")
+        if resp =~ chart_identifier
+          save_succeed = true
+          break
+        end
+      end
+      if !save_succeed
+        puts "failed to save chart"
+        exit 1
+      end
+
+      export_succeed = false
       EXPORT_RETRY.times do |i|
         log("export chart: attempt #{i} ")
-        helm_exec("chart export #{@registry}/#{chart}:#{version} -d #{dir}")
-        break if $?==0
+        helm_exec("chart export #{chart_identifier} -d #{dir}")
+        if $?==0
+          export_succeed  = true
+          break
+        end
       end
-      if $? != 0
+      if !export_succeed
         puts "failed to export chart"
         exit 1
       end
+
       log(`ls #{dir}`)
       helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
       log(`ls #{dir}`)
