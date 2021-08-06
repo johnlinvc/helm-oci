@@ -9,7 +9,7 @@ task :build_self do
   FileUtils.mkdir_p("tmp")
   system_raise("vendor/mruby/bin/mrbc -o tmp/helm_oci.c -Bhelm_oci src/helm_oci.rb")
   FileUtils.mkdir_p("bin")
-  system_raise("gcc -std=c99 -Ivendor/mruby/include src/main.c -o bin/helm-oci vendor/mruby/build/host/lib/libmruby.a vendor/mruby/build/host/mrbgems/mruby-yaml/yaml-0.2.2/build/lib/libyaml.a -lm -lcurl")
+  system_raise("gcc -std=c99 -Ivendor/mruby/include src/main.c -o bin/helm-oci vendor/mruby/build/host/lib/libmruby.a vendor/mruby/build/host/mrbgems/mruby-yaml/libyaml/build/lib/libyaml.a -lm -lcurl")
 end
 
 task :build_mruby do
