@@ -163,6 +163,7 @@ class HelmOci
       helm_exec("registry login -u #{user} -p #{pw} #{@registry}")
       helm_exec("chart pull #{@registry}/#{chart}:#{version}")
       log(`ls #{dir}`)
+      helm_exec("chart list")
       helm_exec("chart export #{@registry}/#{chart}:#{version} -d #{dir}")
       log(`ls #{dir}`)
       helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
