@@ -20,7 +20,10 @@ jobs:
       with:
         ruby-version: ${{matrix.ruby}}
     - name: Install Deps (Linux)
-      run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev -y
+      run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev automake -y
       if: matrix.os == 'ubuntu'
+    - name: Install Deps (macos)
+      run: brew install automake
+      if: matrix.os == 'macos'
     - name: build 
       run: rake build
