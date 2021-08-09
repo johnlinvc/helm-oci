@@ -47,7 +47,7 @@ task :release_mac => %w[clean build]do
 end
 
 task :docker_release_linux do
-  system_raise("docker run --rm -it -v '#{pwd}':/app -w /app ruby:2.7 /bin/bash -c 'rake release_linux'")
+  system_raise("docker run --rm -it -v '#{pwd}':/app -w /app ruby:2.6-stretch /bin/bash -c 'rake release_linux'")
 end
 
 task :release_linux => %w[clean build] do
