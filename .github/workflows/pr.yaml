@@ -8,10 +8,10 @@ on:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu, macos]
+        os: [ubuntu-18.04, macos-latest]
         ruby: [2.7]
     steps:
     - uses: actions/checkout@v2
@@ -21,9 +21,9 @@ jobs:
         ruby-version: ${{matrix.ruby}}
     - name: Install Deps (Linux)
       run: sudo apt-get update && sudo apt-get install libcurl4-openssl-dev automake -y
-      if: matrix.os == 'ubuntu'
+      if: startsWith(matrix.os , 'ubuntu')
     - name: Install Deps (macos)
       run: brew install automake
-      if: matrix.os == 'macos'
+      if: startsWith(matrix.os , 'macos')
     - name: build 
       run: rake build
