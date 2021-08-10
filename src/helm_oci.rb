@@ -172,10 +172,10 @@ class HelmOci
         log("pull chart: attempt #{i} ")
         helm_exec("chart pull #{chart_identifier}")
         resp = helm_exec("chart list")
-        if resp =~ chart_identifier
-          save_succeed = true
-          break
+        save_succeed = resp.each_line.map{ |l| l.split("\t").map(&:strip) }.any? do |fs|
+          fs[1] == chart && fs[2] == version
         end
+        break if save_succeed
       end
       if !save_succeed
         puts "failed to save chart"
