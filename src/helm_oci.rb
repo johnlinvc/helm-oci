@@ -38,15 +38,20 @@ class HelmOci
       addr[2...-1]
     end
 
-    def query_oci(*paths)
+    def query_oci_json(*paths, headers: {})
+      response = query_oci(*paths, headers: headers)
+      json_body = JSON.parse(response.body)
+      log(json_body)
+      [json_body, extract_next_page(response)]
+    end
+
+    def query_oci(*paths, headers: {})
       next_page = nil
       uri = url_with_auth(*paths)
       log("query_oci uri",uri)
       curl = Curl.new
       response = curl.get(uri)
-      json_body = JSON.parse(response.body)
-      log(json_body)
-      [json_body, extract_next_page(response)]
+      response
     end
 
     def query_all(start_link)
@@ -55,7 +60,7 @@ class HelmOci
       next_page = start_link
       while next_page
         log("next_page",next_page)
-        current_result, next_page = query_oci(next_page)
+        current_result, next_page = query_oci_json(next_page)
         all_result.append(current_result)
         log(current_result)
       end
@@ -150,6 +155,68 @@ class HelmOci
       end
     end
 
+    def pull_v2(registry, chart, version, dir)
+      save_succeed = false
+      PULL_RETRY.times do |i|
+        log("pull chart: attempt #{i} ")
+        chart_identifier="oci://#{registry}/#{chart}"
+        helm_exec("pull -d #{dir} #{chart_identifier} --version #{version}")
+        if $? == 0
+          save_succeed = true
+        end
+        break if save_succeed
+      end
+      if !save_succeed
+        puts "failed to save chart"
+        exit 1
+      end
+    end
+
+    def pull(chart_identifier)
+      save_succeed = false
+      PULL_RETRY.times do |i|
+        log("pull chart: attempt #{i} ")
+        helm_exec("chart pull #{chart_identifier}")
+        resp = helm_exec("chart list")
+        save_succeed = resp.each_line.map{ |l| l.split("\t").map(&:strip) }.any? do |fs|
+          fs[1] == chart && fs[2] == version
+        end
+        break if save_succeed
+      end
+      if !save_succeed
+        puts "failed to save chart"
+        exit 1
+      end
+    end
+
+    def export(chart_identifier, dir)
+      export_succeed = false
+      EXPORT_RETRY.times do |i|
+        log("export chart: attempt #{i} ")
+        helm_exec("chart export #{chart_identifier} -d #{dir}")
+        if $?==0
+          export_succeed  = true
+          break
+        end
+      end
+      if !export_succeed
+        puts "failed to export chart"
+        exit 1
+      end
+    end
+
+    def check_helm_oci_support
+      version = `#{ENV['HELM_BIN']} version --short`
+      log(version)
+      major,minor,bugfix=version[1..-1].split(".",3)
+      log([major,minor,bugfix])
+      if major.to_i >= 3 && minor.to_i >= 7
+        :v2
+      else
+        :v1
+      end
+    end
+
     TMP_DIR_NAME=".helm_oci_tmp"
     EXPORT_RETRY=5
     PULL_RETRY=5
@@ -165,41 +232,27 @@ class HelmOci
       log(chart, version)
       log(dir)
       helm_exec("registry login -u #{user} -p #{pw} #{@registry}")
-      chart_identifier = "#{@registry}/#{chart}:#{version}"
-
-      save_succeed = false
-      PULL_RETRY.times do |i|
-        log("pull chart: attempt #{i} ")
-        helm_exec("chart pull #{chart_identifier}")
-        resp = helm_exec("chart list")
-        save_succeed = resp.each_line.map{ |l| l.split("\t").map(&:strip) }.any? do |fs|
-          fs[1] == chart && fs[2] == version
-        end
-        break if save_succeed
-      end
-      if !save_succeed
-        puts "failed to save chart"
-        exit 1
-      end
-
-      export_succeed = false
-      EXPORT_RETRY.times do |i|
-        log("export chart: attempt #{i} ")
-        helm_exec("chart export #{chart_identifier} -d #{dir}")
-        if $?==0
-          export_succeed  = true
-          break
-        end
-      end
-      if !export_succeed
-        puts "failed to export chart"
-        exit 1
+      log(check_helm_oci_support)
+      case check_helm_oci_support
+      when :v1
+        chart_identifier = "#{@registry}/#{chart}:#{version}"
+        pull(chart_identifier)
+        export(chart_identifier, dir)
+      when :v2
+        pull_v2(@registry, chart, version, dir)
       end
 
       log(`ls #{dir}`)
       helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
       log(`ls #{dir}`)
       target_path = "#{dir}/#{chart}-#{version}.tgz"
+    end
+
+    def fetch_directly(version)
+      log(ENV['HELM_BIN'])
+      manifest_path="v2/#{@chart}/tags/list"
+      headers = {"accept" => "application/vnd.docker.distribution.manifest.v2+json"}
+      manifest_json = query_oci_json(manifest_path, headers: headers)
     end
 
     def fetch_package(version)
@@ -274,6 +327,7 @@ class HelmOci
         gen_index(@action)
       when /.*\.tgz\?tag=(.*)/
         fetch_package($1)
+        #fetch_directly($1)
       end
     end
 
