@@ -172,7 +172,7 @@ class HelmOci
       end
     end
 
-    def pull(chart_identifier)
+    def pull(chart_identifier, chart, version)
       save_succeed = false
       PULL_RETRY.times do |i|
         log("pull chart: attempt #{i} ")
@@ -236,7 +236,7 @@ class HelmOci
       case check_helm_oci_support
       when :v1
         chart_identifier = "#{@registry}/#{chart}:#{version}"
-        pull(chart_identifier)
+        pull(chart_identifier, chart, version)
         export(chart_identifier, dir)
         log(`ls #{dir}`)
         helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
@@ -246,13 +246,6 @@ class HelmOci
       end
 
       target_path = "#{dir}/#{chart}-#{version}.tgz"
-    end
-
-    def fetch_directly(version)
-      log(ENV['HELM_BIN'])
-      manifest_path="v2/#{@chart}/tags/list"
-      headers = {"accept" => "application/vnd.docker.distribution.manifest.v2+json"}
-      manifest_json = query_oci_json(manifest_path, headers: headers)
     end
 
     def fetch_package(version)
@@ -327,7 +320,6 @@ class HelmOci
         gen_index(@action)
       when /.*\.tgz\?tag=(.*)/
         fetch_package($1)
-        #fetch_directly($1)
       end
     end
 
