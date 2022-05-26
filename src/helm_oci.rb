@@ -160,7 +160,7 @@ class HelmOci
       PULL_RETRY.times do |i|
         log("pull chart: attempt #{i} ")
         chart_identifier="oci://#{registry}/#{chart}"
-        helm_exec("pull -d #{dir} #{chart_identifier} --version #{version}")
+        helm_exec("pull #{chart_identifier} --version #{version} -d #{dir}")
         if $? == 0
           save_succeed = true
         end
@@ -238,13 +238,13 @@ class HelmOci
         chart_identifier = "#{@registry}/#{chart}:#{version}"
         pull(chart_identifier)
         export(chart_identifier, dir)
+        log(`ls #{dir}`)
+        helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
+        log(`ls #{dir}`)
       when :v2
         pull_v2(@registry, chart, version, dir)
       end
 
-      log(`ls #{dir}`)
-      helm_exec("package #{dir}/#{chart} -d #{dir} --version #{version}")
-      log(`ls #{dir}`)
       target_path = "#{dir}/#{chart}-#{version}.tgz"
     end
 
