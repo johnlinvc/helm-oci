@@ -210,6 +210,10 @@ class HelmOci
       log(version)
       major,minor,bugfix=version[1..-1].split(".",3)
       log([major,minor,bugfix])
+      if [major, minor, bugfix[0]] == %w{3 7 0}
+        $stderr.puts("helm 3.7.0 is not supported, please upgrade to 3.7.1 or downgrade to 3.6")
+        exit 1
+      end
       if major.to_i >= 3 && minor.to_i >= 7
         :v2
       else
