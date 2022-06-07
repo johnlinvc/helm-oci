@@ -8,12 +8,12 @@ builds:
     https://github.com/mattn/mruby-onig-regexp.git:
       url: https://github.com/mattn/mruby-onig-regexp.git
       branch: HEAD
-      commit: 76087d150d12f167e95ae10d326099b352cf3d18
+      commit: 20ba3325d6fa504cbbf193e1b2a90e20fdab544f
       version: 0.0.0
     https://github.com/mrbgems/mruby-yaml.git:
       url: https://github.com/mrbgems/mruby-yaml.git
       branch: HEAD
-      commit: 9f4408d4d46ffc8668ea07cc9c6249f33114d3a9
+      commit: a7345b3124bac6084e58c236882f3e27918f5126
       version: 0.1.0
     https://github.com/mattn/mruby-curl.git:
       url: https://github.com/mattn/mruby-curl.git
@@ -23,12 +23,12 @@ builds:
     https://github.com/matsumotory/mruby-simplehttpserver.git:
       url: https://github.com/matsumotory/mruby-simplehttpserver.git
       branch: HEAD
-      commit: b017b4cd124c81bfde1afc2c69ff5d5273ef4980
+      commit: 4f811b34c487a9cb1c2dcd538b75c1812167872f
       version: 1.0.0
     https://github.com/mattn/mruby-json.git:
       url: https://github.com/mattn/mruby-json.git
       branch: HEAD
-      commit: '054699892b0d681110e7348440cddb70a3fd671e'
+      commit: f99d9428025469f2400f93c53b185f65f963e507
       version: 0.0.0
     https://github.com/iij/mruby-dir.git:
       url: https://github.com/iij/mruby-dir.git
@@ -68,7 +68,12 @@ builds:
     https://github.com/katzer/mruby-shelf.git:
       url: https://github.com/katzer/mruby-shelf.git
       branch: HEAD
-      commit: 3bf2bc69eaceb4555ded37081e61c247808e6d88
+      commit: 4db2a9828a8c06ae1186ca2c2b7bc815a678213a
+      version: 0.0.0
+    https://github.com/ksss/mruby-stringio.git:
+      url: https://github.com/ksss/mruby-stringio.git
+      branch: HEAD
+      commit: 97cc4434519e85a0785a1b4cf6f872a220f772db
       version: 0.0.0
     https://github.com/iij/mruby-errno.git:
       url: https://github.com/iij/mruby-errno.git
